@@ -227,9 +227,11 @@ public class FingerController : MonoBehaviour
     {
 
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
         transform.Rotate(Vector3.up, mouseX);
 
+        cameraPitch -= mouseY;
         cameraPitch = Mathf.Clamp(cameraPitch, cameraMinPitch, cameraMaxPitch);
 
         if (cameraRoot != null)
