@@ -132,7 +132,9 @@ GameObject:
   - component: {fileID: 322146184}
   - component: {fileID: 322146183}
   - component: {fileID: 322146188}
-  - component: {fileID: 322146187}
+  - component: {fileID: 322146191}
+  - component: {fileID: 322146190}
+  - component: {fileID: 322146189}
   m_Layer: 0
   m_Name: Finger
   m_TagString: Untagged
@@ -237,57 +239,6 @@ Transform:
   - {fileID: 1045806533}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &322146187
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 322146182}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8c59818433892e48bdbbb510d69e6aa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FingerController
-  controller: {fileID: 322146188}
-  cameraRoot: {fileID: 330585546}
-  HandAnimator: {fileID: 1045806535}
-  mouseSensitivity: 3
-  cameraMinPitch: -20
-  cameraMaxPitch: 45
-  baseStepDistance: 0.5
-  stepDuration: 0.2
-  stepSpeedCurve:
-    serializedVersion: 2
-    m_Curve: []
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  moveSpeedMultipliers:
-  - 1
-  jumpPowerMultipliers:
-  - 1
-  baseJumpPower: 10
-  extraJumpForwardFactor: 0.3
-  gravity: -9.81
-  useRhythmSystem: 1
-  beatInterval: 0.5
-  rhythmStartDelay: 0.5
-  perfectWindow: 0.06
-  goodWindow: 0.12
-  badWindow: 0.2
-  perfectStepMultiplier: 1
-  goodStepMultiplier: 0.85
-  badStepMultiplier: 0.65
-  rhythmStarted: 0
-  currentBeatIndex: 0
-  expectedButton: 0
-  currentBeatTime: 0
-  timeToNextBeat: 0
-  lastInputOffset: 999
-  lastJudgement: 0
-  allowContinuousMove: 0
-  continuousMoveSpeed: 3
 --- !u!143 &322146188
 CharacterController:
   m_ObjectHideFlags: 0
@@ -313,6 +264,132 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &322146189
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 322146182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e815454cfb920ea4aaef73b7e8b31552, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FingerHandAnimator
+  handAnimator: {fileID: 1045806535}
+  idleStateName: Hand_Idle
+  leftStateName: Hand_Walk_Left
+  rightStateName: Hand_Walk_Right
+  sourceClipLength: 0.5
+  maxAnimatorSpeed: 3
+  minAnimatorSpeed: 0.5
+--- !u!114 &322146190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 322146182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8c59818433892e48bdbbb510d69e6aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FingerController
+  controller: {fileID: 322146188}
+  cameraRoot: {fileID: 330585546}
+  rhythmSystem: {fileID: 322146191}
+  handAnimatorController: {fileID: 322146189}
+  mouseSensitivity: 3
+  cameraMinPitch: -20
+  cameraMaxPitch: 45
+  baseStepDistance: 0.5
+  stepDuration: 0.2
+  stepSpeedCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  moveSpeedMultipliers:
+  - 1
+  - 1.2
+  - 1.4
+  - 1.6
+  - 1.8
+  - 2
+  - 2.2
+  - 2.4
+  - 2.6
+  - 2.8
+  - 3
+  - 3.2
+  - 3.4
+  - 3.6
+  baseJumpPower: 3
+  extraJumpForwardFactor: 0.3
+  jumpPowerMultipliers:
+  - 1
+  - 1.2
+  - 1.4
+  - 1.6
+  - 1.8
+  - 2
+  - 2.2
+  - 2.4
+  - 2.6
+  - 2.8
+  - 3
+  - 3.2
+  - 3.4
+  - 3.6
+  gravity: -9.81
+  allowContinuousMove: 0
+  continuousMoveSpeed: 3
+--- !u!114 &322146191
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 322146182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 203d98bf14f3a0e488f0ee8b6ee0c7dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FingerRhythmSystem
+  timingTable:
+    successIntervals:
+    - 0.5
+    - 0.45
+    - 0.405
+    - 0.3645
+    - 0.328125
+    - 0.295
+    - 0.2655
+    - 0.2385
+    - 0.2145
+    - 0.1935
+    - 0.174
+    - 0.1565
+    - 0.141
+    - 0.127
+  successWindowRatio: 0.2
+  rhythmStarted: 0
+  firstStartConsumed: 0
+  comboCount: 0
+  totalSuccessCount: 0
+  currentBeatSide: 0
+  expectedSide: 0
+  currentBeatTime: 0
+  currentBeatInterval: 0.5
+  nextBeatTime: 0
+  nextIntervalAfterCurrentBeat: 0.5
+  currentWindow: 0.1
+  currentBeatSuccessful: 0
+  currentBeatLocked: 0
+  timeSinceCurrentBeat: 0
+  normalizedProgress: 0
+  lastResult: 0
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
