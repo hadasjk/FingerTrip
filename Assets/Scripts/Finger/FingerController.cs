@@ -1,10 +1,9 @@
-using System.Collections;
 using UnityEngine;
 
 public class FingerController : MonoBehaviour
 {
 
-    public UnityEngine.CharacterController controller;
+    public CharacterController controller;
     public Transform cameraRoot;
 
     [Header("Separated Systems")]
@@ -18,11 +17,9 @@ public class FingerController : MonoBehaviour
 
     private float cameraPitch = 0f;
 
-    [Header("Step Movement")]
-    public float baseStepDistance = 0.5f;
-    public float stepDuration = 0.2f;
-    public AnimationCurve stepSpeedCurve;
-
+    [Header("Continuous Move")]
+    [Tooltip("기본 전진 속도. 콤보 배율이 여기에 곱해진다.")]
+    public float baseMoveSpeed = 1.0f;
     public float[] moveSpeedMultipliers;
 
     [Header("Jump")]
@@ -39,13 +36,14 @@ public class FingerController : MonoBehaviour
 
     private Vector3 velocity;
     private bool isJumping = false;
-    private bool isStepping = false;
-    private Coroutine stepRoutine;
+
+    private bool isMovingForward = false;
+    private float currentMoveSpeed = 0f;
 
     private void Reset()
     {
 
-        controller = GetComponent<UnityEngine.CharacterController>();
+        controller = GetComponent<CharacterController>();
         cameraRoot = GetComponentInChildren<Camera>()?.transform;
 
         if (rhythmSystem == null)
@@ -70,7 +68,7 @@ public class FingerController : MonoBehaviour
         if (controller == null)
         {
 
-            controller = GetComponent<UnityEngine.CharacterController>();
+            controller = GetComponent<CharacterController>();
 
         }
 
@@ -100,6 +98,7 @@ public class FingerController : MonoBehaviour
             rhythmSystem.OnBeatStep += HandleBeatStepAnimation;
             rhythmSystem.OnStepSuccess += HandleStepSuccess;
             rhythmSystem.OnStepFail += HandleStepFail;
+            rhythmSystem.OnComboReset += HandleComboReset;
 
         }
 
@@ -121,6 +120,7 @@ public class FingerController : MonoBehaviour
             rhythmSystem.OnBeatStep -= HandleBeatStepAnimation;
             rhythmSystem.OnStepSuccess -= HandleStepSuccess;
             rhythmSystem.OnStepFail -= HandleStepFail;
+            rhythmSystem.OnComboReset -= HandleComboReset;
 
         }
 
@@ -132,6 +132,7 @@ public class FingerController : MonoBehaviour
         HandleMouseLook();
         HandleGravity();
         HandleInput();
+        HandleForwardMove();
         ApplyVelocity();
 
     }
@@ -205,10 +206,10 @@ public class FingerController : MonoBehaviour
     private void HandleStepSuccess(FingerStepSide side, int comboCount, float nextInterval)
     {
 
-        StartStep(comboCount);
+        StartContinuousMove(comboCount);
 
         Debug.Log(
-            $"[FingerStep] Success | Side:{side} | Combo:{comboCount} | NextInterval:{nextInterval:F4}"
+            $"[FingerStep] Success | Side:{side} | Combo:{comboCount} | NextInterval:{nextInterval:F4} | MoveSpeed:{currentMoveSpeed:F3}"
         );
 
     }
@@ -216,21 +217,21 @@ public class FingerController : MonoBehaviour
     private void HandleStepFail()
     {
 
-        Debug.Log("[FingerStep] Fail | No Move | Combo Reset | Rhythm Continues");
+        StopForwardMove();
+
+        Debug.Log("[FingerStep] Fail | Stop Move | Combo Reset | Rhythm Continues");
 
     }
 
-    private void StartStep(int comboCount)
+    private void HandleComboReset()
     {
 
-        if (stepRoutine != null)
-        {
+        StopForwardMove();
 
-            StopCoroutine(stepRoutine);
-            stepRoutine = null;
-            isStepping = false;
+    }
 
-        }
+    private void StartContinuousMove(int comboCount)
+    {
 
         float moveMultiplier = 1f;
 
@@ -242,49 +243,41 @@ public class FingerController : MonoBehaviour
 
         }
 
-        float stepDistance = baseStepDistance * moveMultiplier;
+        currentMoveSpeed = baseMoveSpeed * moveMultiplier;
+        isMovingForward = true;
+
+    }
+
+    private void StopForwardMove()
+    {
+
+        isMovingForward = false;
+        currentMoveSpeed = 0f;
+
+    }
+
+    private void HandleForwardMove()
+    {
+
+        if (!isMovingForward)
+        {
+
+            return;
+
+        }
+
+        if (!controller.isGrounded)
+        {
+
+            return;
+
+        }
 
         Vector3 forward = transform.forward;
         forward.y = 0f;
         forward.Normalize();
 
-        Vector3 startPos = transform.position;
-        Vector3 targetPos = startPos + forward * stepDistance;
-
-        stepRoutine = StartCoroutine(StepRoutine(startPos, targetPos));
-
-    }
-
-    private IEnumerator StepRoutine(Vector3 startPos, Vector3 targetPos)
-    {
-
-        isStepping = true;
-
-        float t = 0f;
-
-        while (t < stepDuration)
-        {
-
-            float normalized = t / Mathf.Max(0.0001f, stepDuration);
-
-            float curve = (stepSpeedCurve != null && stepSpeedCurve.keys.Length > 0)
-                ? stepSpeedCurve.Evaluate(normalized)
-                : normalized;
-
-            Vector3 newPos = Vector3.Lerp(startPos, targetPos, curve);
-            Vector3 delta = newPos - transform.position;
-
-            controller.Move(delta);
-
-            t += Time.deltaTime;
-            yield return null;
-
-        }
-
-        controller.Move(targetPos - transform.position);
-
-        isStepping = false;
-        stepRoutine = null;
+        controller.Move(forward * currentMoveSpeed * Time.deltaTime);
 
     }
 
@@ -344,6 +337,8 @@ public class FingerController : MonoBehaviour
         Vector3 jumpForwardOffset = forward * extraJumpForwardFactor;
         controller.Move(jumpForwardOffset);
 
+        StopForwardMove();
+
         if (rhythmSystem != null)
         {
 
@@ -355,23 +350,12 @@ public class FingerController : MonoBehaviour
 
     }
 
-    private void HandleMouseLook()      // y축 회전 없앰
+    private void HandleMouseLook()
     {
 
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
-        // float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
         transform.Rotate(Vector3.up, mouseX);
-
-        // cameraPitch -= mouseY;
-        // cameraPitch = Mathf.Clamp(cameraPitch, cameraMinPitch, cameraMaxPitch);
-
-        //if (cameraRoot != null)
-        //{
-
-        //    cameraRoot.localEulerAngles = new Vector3(cameraPitch, 0f, 0f);
-
-        //}
 
     }
 
