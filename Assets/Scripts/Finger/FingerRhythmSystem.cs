@@ -19,6 +19,10 @@ public class FingerRhythmSystem : MonoBehaviour
     [Range(0.01f, 0.49f)]
     public float successWindowRatio = 0.2f;
 
+    [Header("Judgement Bias")]
+    [Tooltip("조금 이른 입력을 추가로 허용하는 값(초)")]
+    public float earlyPressBonus = 0.02f;
+
     [Header("Debug")]
     public bool rhythmStarted = false;
     public bool firstStartConsumed = false;
@@ -119,8 +123,10 @@ public class FingerRhythmSystem : MonoBehaviour
 
         float now = Time.time;
         float offset = now - currentBeatTime;
-        float absOffset = Mathf.Abs(offset);
         float window = GetWindow(currentBeatInterval);
+
+        float earlyLimit = -(window + earlyPressBonus);
+        float lateLimit = window;
 
         if (clickedSide != expectedSide)
         {
@@ -130,7 +136,7 @@ public class FingerRhythmSystem : MonoBehaviour
 
         }
 
-        if (absOffset > window)
+        if (offset < earlyLimit || offset > lateLimit)
         {
 
             RegisterFailure();
@@ -323,3 +329,4 @@ public class FingerRhythmSystem : MonoBehaviour
     }
 
 }
+

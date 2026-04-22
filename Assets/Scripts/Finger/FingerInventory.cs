@@ -7,3 +7,4 @@ public class FingerInventory : MonoBehaviour
     private int currentCoin = 0;
 
 }
+
